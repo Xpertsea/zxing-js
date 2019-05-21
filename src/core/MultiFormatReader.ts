@@ -25,6 +25,7 @@ import MultiFormatOneDReader from './oned/MultiFormatOneDReader';
 import DataMatrixReader from './datamatrix/DataMatrixReader';
 import NotFoundException from './NotFoundException';
 import ReaderException from './ReaderException';
+import ResultPoint from './ResultPoint';
 
 /*namespace com.google.zxing {*/
 
@@ -56,6 +57,10 @@ export default class MultiFormatReader implements Reader {
     //   setHints(null)
     //   return decodeInternal(image)
     // }
+
+    findAllPatterns(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): ResultPoint[] {
+        throw new ReaderException();
+    }
 
     /**
      * Decode an image using the hints provided. Does not honor existing state.

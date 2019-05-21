@@ -25,6 +25,7 @@ import Result from '../Result';
 import ResultMetadataType from '../ResultMetadataType';
 import ResultPoint from '../ResultPoint';
 import NotFoundException from '../NotFoundException';
+import ReaderException from '../ReaderException';
 
 /**
  * Encapsulates functionality and implementation that is common to all families
@@ -41,6 +42,10 @@ export default abstract class OneDReader implements Reader {
       return decode(image, null);
     }
     */
+
+    findAllPatterns(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): ResultPoint[] {
+        throw new ReaderException();
+    }
 
     // Note that we don't try rotation without the try harder flag, even if rotation was supported.
     // @Override

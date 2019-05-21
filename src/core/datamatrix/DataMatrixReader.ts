@@ -13,6 +13,7 @@ import Detector from './detector/Detector';
 
 import System from '../util/System';
 import NotFoundException from '../NotFoundException';
+import ReaderException from '../ReaderException';
 
 /*
  * Copyright 2007 ZXing authors
@@ -40,6 +41,10 @@ export default class DataMatrixReader implements Reader {
   private static NO_POINTS: ResultPoint[] = [];
 
   private decoder: Decoder = new Decoder();
+
+  findAllPatterns(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): ResultPoint[] {
+    throw new ReaderException();
+  }
 
   /**
    * Locates and decodes a Data Matrix code in an image.

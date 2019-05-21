@@ -9,6 +9,7 @@ import ArgumentException from '../core/ArgumentException';
 import DecodeHintType from '../core/DecodeHintType';
 import ChecksumException from '../core/ChecksumException';
 import FormatException from '../core/FormatException';
+import ResultPoint from '../core/ResultPoint';
 
 type HTMLVisualMediaElement = HTMLVideoElement | HTMLImageElement;
 
@@ -281,6 +282,31 @@ export class BrowserCodeReader {
         });
     }
 
+    public findAllPatternsFromImage(imageElement?: string | HTMLImageElement, imageUrl?: string): Promise<ResultPoint[]> {
+        this.reset();
+
+        if (undefined === imageElement && undefined === imageUrl) {
+            throw new ArgumentException('either imageElement with a src set or an url must be provided');
+        }
+
+        this.prepareImageElement(imageElement);
+
+        return new Promise<ResultPoint[]>((resolve, reject) => {
+            if (undefined !== imageUrl) {
+                this.imageLoadedEventListener = () => {
+                    this.findAllPatternsOnce(resolve, reject, false, true);
+                };
+                this.imageElement.addEventListener('load', this.imageLoadedEventListener);
+
+                this.imageElement.src = imageUrl;
+            } else if (this.isImageLoaded(this.imageElement)) {
+                this.findAllPatternsOnce(resolve, reject, false, true);
+            } else {
+                throw new ArgumentException(`either src or a loaded img should be provided`);
+            }
+        });
+    }
+
     protected isImageLoaded(img: HTMLImageElement) {
         // During the onload event, IE correctly identifies any images that
         // weren’t downloaded as not complete. Others should too. Gecko-based
@@ -338,6 +364,28 @@ export class BrowserCodeReader {
         }
     }
 
+    protected findAllPatternsOnceWithDelay(resolve: (result: ResultPoint[]) => any, reject: (error: any) => any): void {
+        this.timeoutHandler = window.setTimeout(this.findAllPatternsOnce.bind(this, resolve, reject), this.timeBetweenScansMillis);
+    }
+
+    protected findAllPatternsOnce(resolve: (result: ResultPoint[]) => any, reject: (error: any) => any, retryIfNotFound: boolean = true, retryIfChecksumOrFormatError: boolean = true): void {
+
+        try {
+            const result = this.findAllPatterns();
+            resolve(result);
+        } catch (re) {
+            if (retryIfNotFound && re instanceof NotFoundException) {
+                // Not found, trying again
+                this.findAllPatternsOnceWithDelay(resolve, reject);
+            } else if (retryIfChecksumOrFormatError && (re instanceof ChecksumException || re instanceof FormatException)) {
+                // checksum or format error, trying again
+                this.findAllPatternsOnceWithDelay(resolve, reject);
+            } else {
+                reject(re);
+            }
+        }
+    }
+
     /**
      * Gets the BinaryBitmap for ya! (and decodes it)
      */
@@ -347,6 +395,17 @@ export class BrowserCodeReader {
       const binaryBitmap = this.createBinaryBitmap(this.videoElement || this.imageElement);
 
       return this.decodeBitmap(binaryBitmap);
+    }
+
+    /**
+     * Gets the BinaryBitmap for ya! (and decodes it)
+     */
+    protected findAllPatterns(): ResultPoint[] {
+
+      // get binary bitmap for decode function
+      const binaryBitmap = this.createBinaryBitmap(this.videoElement || this.imageElement);
+
+      return this.findAllPatternsFromBitmap(binaryBitmap);
     }
 
     /**
@@ -380,6 +439,13 @@ export class BrowserCodeReader {
      */
     protected decodeBitmap(binaryBitmap: BinaryBitmap): Result {
       return this.reader.decode(binaryBitmap, this.hints);
+    }
+
+    /**
+     * Call the encapsulated readers decode
+     */
+    protected findAllPatternsFromBitmap(binaryBitmap: BinaryBitmap): ResultPoint[] {
+      return this.reader.findAllPatterns(binaryBitmap, this.hints);
     }
 
     /**
@@ -439,7 +505,7 @@ export class BrowserCodeReader {
     public reset() {
 
         window.clearTimeout(this.timeoutHandler);
-        
+
         // stops the camera, preview and scan 🔴
         this.stopStreams();
 

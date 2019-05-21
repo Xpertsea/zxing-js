@@ -21,6 +21,8 @@
 import BinaryBitmap from './BinaryBitmap';
 import Result from './Result';
 import DecodeHintType from './DecodeHintType';
+import ResultPoint from './ResultPoint';
+import ReaderException from './ReaderException';
 
 export default Reader;
 
@@ -66,6 +68,8 @@ interface Reader {
      * @throws FormatException if a potential barcode is found but format is invalid
      */
     decode(image: BinaryBitmap, hints?: Map<DecodeHintType, any> | null): Result;
+
+    findAllPatterns(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): ResultPoint[];
 
     /**
      * Resets any internal state the implementation has after a decode, to prepare it

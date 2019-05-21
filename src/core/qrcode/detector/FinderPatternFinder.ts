@@ -74,6 +74,13 @@ export default class FinderPatternFinder {
     }
 
     public find(hints: Map<DecodeHintType, any>): FinderPatternInfo /*throws NotFoundException */ {
+        this.findAllPatterns(hints);
+        const patternInfo: FinderPattern[] = this.selectBestPatterns();
+        ResultPoint.orderBestPatterns(patternInfo);
+        return new FinderPatternInfo(patternInfo);
+    }
+
+    public findAllPatterns(hints: Map<DecodeHintType, any>): FinderPattern[] {
         const tryHarder: boolean = (hints !== null && hints !== undefined) && undefined !== hints.get(DecodeHintType.TRY_HARDER);
         const pureBarcode: boolean = (hints !== null && hints !== undefined) && undefined !== hints.get(DecodeHintType.PURE_BARCODE);
         const image = this.image;
@@ -177,11 +184,7 @@ export default class FinderPatternFinder {
                 }
             }
         }
-
-        const patternInfo: FinderPattern[] = this.selectBestPatterns();
-        ResultPoint.orderBestPatterns(patternInfo);
-
-        return new FinderPatternInfo(patternInfo);
+        return this.possibleCenters;
     }
 
     /**

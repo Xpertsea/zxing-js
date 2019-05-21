@@ -86,6 +86,14 @@ export default class Detector {
         return this.processFinderPatternInfo(info);
     }
 
+    public findAllPatterns(hints: Map<DecodeHintType, any>): FinderPattern[] {
+        this.resultPointCallback = (hints === null || hints === undefined) ? null :
+        /*(ResultPointCallback) */hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
+
+        const finder = new FinderPatternFinder(this.image, this.resultPointCallback);
+        return finder.findAllPatterns(hints);
+    }
+
     protected processFinderPatternInfo(info: FinderPatternInfo): DetectorResult {
 
         const topLeft: FinderPattern = info.getTopLeft();

@@ -64,6 +64,11 @@ export default class QRCodeReader implements Reader {
     // }
 
     /*@Override*/
+    public findAllPatterns(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): ResultPoint[] {
+        return new Detector(image.getBlackMatrix()).findAllPatterns(hints);
+    }
+
+    /*@Override*/
     public decode(image: BinaryBitmap, hints?: Map<DecodeHintType, any>): Result {
         let decoderResult: DecoderResult;
         let points: Array<ResultPoint>;
